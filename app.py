@@ -188,3 +188,48 @@ if __name__ == '__main__':
     print("📡 API Endpoint: http://127.0.0.1:5000/api/sensor-data")
     print("=" * 50)
     app.run()
+    @app.route('/api/generate-data', methods=['GET'])
+def generate_data_endpoint():
+    """Public endpoint that generates and stores a data point"""
+    import random
+    from datetime import datetime
+    
+    hour = datetime.now().hour
+    
+    # Generate realistic data
+    if 6 <= hour < 9:  # Morning fasting
+        glucose = random.uniform(80, 100)
+    elif 9 <= hour < 11:  # After breakfast
+        glucose = random.uniform(110, 135)
+    elif 12 <= hour < 14:  # Lunch
+        glucose = random.uniform(115, 140)
+    elif 19 <= hour < 21:  # Dinner
+        glucose = random.uniform(120, 145)
+    else:  # Night
+        glucose = random.uniform(85, 105)
+    
+    data = {
+        "patient_id": "P001",
+        "patient_name": "Auto Patient",
+        "age": 45,
+        "bmi": round(random.uniform(22, 28), 1),
+        "glucose_level": round(glucose, 1),
+        "heart_rate": random.randint(65, 85),
+        "temperature": round(36.5 + random.uniform(-0.3, 0.5), 1),
+        "blood_pressure_sys": random.randint(110, 130),
+        "blood_pressure_dia": random.randint(70, 85),
+        "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "source": "cron-job"
+    }
+    
+    # Store in your existing data structure
+    global latest_data, health_history
+    latest_data = data
+    health_history.append(data)
+    if len(health_history) > 50:
+        health_history.pop(0)
+    
+    # Also send to prediction endpoint
+    prediction = get_diabetes_prediction(data)
+    
+    return jsonify({"status": "success", "data": data})
