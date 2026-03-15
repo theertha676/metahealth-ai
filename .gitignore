@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pkl
+*.db
+venv/
+env/
+.env
+.python-version
+.DS_Store
