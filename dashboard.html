@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaHealth AI - Diabetes Prediction System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+        }
+
+        .title h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .connection-status {
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+            background: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        /* Vital Signs */
+        .vital-value {
+            font-size: 42px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .vital-unit {
+            font-size: 16px;
+            color: #999;
+            font-weight: 400;
+            margin-left: 5px;
+        }
+
+        .vital-range {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .range-normal {
+            color: #28a745;
+        }
+
+        .range-warning {
+            color: #ffc107;
+        }
+
+        .range-danger {
+            color: #dc3545;
+        }
+
+        /* Risk Meter */
+        .risk-meter {
+            margin: 20px 0;
+        }
+
+        .risk-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .risk-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .risk-low { background: #28a745; }
+        .risk-moderate { background: #ffc107; }
+        .risk-high { background: #dc3545; }
+
+        .risk-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Recommendations Section */
+        .recommendations-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .recommendation-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .recommendation-card:hover {
+            transform: translateX(5px);
+        }
+
+        .rec-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .rec-desc {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .rec-urgent {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .rec-warning {
+            border-left-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        /* Health Tips */
+        .health-tip {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tip-icon {
+            font-size: 30px;
+        }
+
+        .tip-content {
+            flex: 1;
+        }
+
+        .tip-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .tip-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .patient-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .vital-value {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-top">
+                <div class="logo-area">
+                    <span class="logo-icon">🩺</span>
+                    <div class="title">
+                        <h1>MetaHealth AI</h1>
+                        <p>Advanced Diabetes Prediction & Monitoring System</p>
+                    </div>
+                </div>
+                <div class="connection-status status-connected" id="connection-status">
+                    <span class="status-dot">●</span> Connected
+                </div>
+            </div>
+            
+            <div class="patient-info" id="patient-info">
+                <div class="info-item">
+                    <span class="info-label">Patient:</span>
+                    <span class="info-value" id="patient-name">--</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Age:</span>
+                    <span class="info-value" id="patient-age">--</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">BMI:</span>
+                    <span class="info-value" id="patient-bmi">--</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Reading:</span>
+                    <span class="info-value" id="last-reading">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vital Signs Grid -->
+        <div class="dashboard-grid">
+            <!-- Glucose Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🍬 Blood Glucose</span>
+                    <span class="card-icon">📊</span>
+                </div>
+                <div class="vital-value">
+                    <span id="glucose-value">--</span>
+                    <span class="vital-unit">mg/dL</span>
+                </div>
+                <div class="vital-range">
+                    Range: <span class="range-normal" id="glucose-range">70-99 (Normal)</span>
+                </div>
+                <div class="risk-meter">
+                    <div class="risk-bar">
+                        <div class="risk-fill" id="glucose-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heart Rate Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">❤️ Heart Rate</span>
+                    <span class="card-icon">📈</span>
+                </div>
+                <div class="vital-value">
+                    <span id="heart-value">--</span>
+                    <span class="vital-unit">bpm</span>
+                </div>
+                <div class="vital-range">
+                    Range: <span class="range-normal" id="heart-range">60-100 (Normal)</span>
+                </div>
+            </div>
+
+            <!-- Temperature Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🌡️ Body Temperature</span>
+                    <span class="card-icon">🔥</span>
+                </div>
+                <div class="vital-value">
+                    <span id="temp-value">--</span>
+                    <span class="vital-unit">°C</span>
+                </div>
+                <div class="vital-range">
+                    Range: <span class="range-normal" id="temp-range">36.1-37.2 (Normal)</span>
+                </div>
+            </div>
+
+            <!-- Blood Pressure Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">💓 Blood Pressure</span>
+                    <span class="card-icon">🩸</span>
+                </div>
+                <div class="vital-value">
+                    <span id="bp-sys">--</span>/<span id="bp-dia">--</span>
+                    <span class="vital-unit">mmHg</span>
+                </div>
+                <div class="vital-range">
+                    Range: <span class="range-normal" id="bp-range">120/80 (Normal)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Assessment Card -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">⚠️ Diabetes Risk Assessment</span>
+                    <span class="card-icon">🎯</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="vital-value" id="risk-score">0</span>
+                        <span class="vital-unit">% risk</span>
+                    </div>
+                    <span class="risk-indicator" id="risk-badge" style="background: #d4edda; color: #155724;">Low Risk</span>
+                </div>
+                <div class="risk-meter">
+                    <div class="risk-bar">
+                        <div class="risk-fill" id="risk-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; color: #666; font-size: 14px;" id="risk-factors">
+                    Analyzing health factors...
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📊 Health Statistics</span>
+                    <span class="card-icon">📉</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="color: #666; font-size: 13px;">Avg Glucose</div>
+                        <div style="font-size: 24px; font-weight: 600;" id="avg-glucose">--</div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 13px;">Max Glucose</div>
+                        <div style="font-size: 24px; font-weight: 600;" id="max-glucose">--</div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 13px;">Readings</div>
+                        <div style="font-size: 24px; font-weight: 600;" id="total-readings">0</div>
+                    </div>
+                    <div>
+                        <div style="color: #666; font-size: 13px;">High Alerts</div>
+                        <div style="font-size: 24px; font-weight: 600;" id="high-alerts">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Glucose History Chart -->
+        <div style="display: none;">
+            <div class="chart-header">
+                <div class="chart-title">📈 Glucose Level History</div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #667eea;"></div>
+                        <span>Glucose (mg/dL)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #dc3545;"></div>
+                        <span>Danger Level</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="glucoseChart" style="height: 300px; width: 100%;"></canvas>
+        </div>
+
+        <!-- Recommendations Section -->
+        <div class="recommendations-section">
+            <div class="section-title">💡 Personalized Health Recommendations</div>
+            <div class="recommendations-grid" id="recommendations-list">
+                <div class="recommendation-card">
+                    <div class="rec-title">Loading recommendations...</div>
+                    <div class="rec-desc">Please wait while we analyze your data</div>
+                </div>
+            </div>
+            
+            <!-- Daily Health Tip -->
+            <div class="health-tip" id="health-tip">
+                <div class="tip-icon">💚</div>
+                <div class="tip-content">
+                    <div class="tip-label">Daily Health Tip</div>
+                    <div class="tip-text" id="tip-text">Stay hydrated and monitor your glucose regularly</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Chart
+        let glucoseChart;
+        const maxDataPoints = 20;
+        let chartLabels = [];
+        let chartData = [];
+        let dangerLine = [];
+
+        // Initialize chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('glucoseChart').getContext('2d');
+            glucoseChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Glucose Level',
+                            data: [],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: 'white',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Danger Level',
+                            data: [],
+                            borderColor: '#dc3545',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 200,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Glucose (mg/dL)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Start fetching data
+            fetchData();
+            setInterval(fetchData, 60000);
+            fetchHealthTip();
+            setInterval(fetchHealthTip, 15000);
+        });
+
+        // Fetch latest data
+        async function fetchData() {
+            try {
+                // Get latest sensor data
+                const response = await fetch('/api/latest-data');
+                const data = await response.json();
+                
+                if (!data.message) {
+                    updateDashboard(data);
+                    
+                    // Get prediction
+                    const predResponse = await fetch('/api/predict', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    const prediction = await predResponse.json();
+                    
+                    updateRisk(prediction);
+                    updateRecommendations(prediction.recommendations);
+                    
+                    // Update chart
+                    updateChart(data);
+                    
+                    // Update connection status
+                    document.getElementById('connection-status').className = 'connection-status status-connected';
+                    document.getElementById('connection-status').innerHTML = '<span class="status-dot">●</span> Connected';
+                }
+            } catch (error) {
+                console.log('Waiting for data...');
+                document.getElementById('connection-status').className = 'connection-status status-disconnected';
+                document.getElementById('connection-status').innerHTML = '<span class="status-dot">●</span> Disconnected';
+            }
+        }
+
+        // Update dashboard with vital signs
+        function updateDashboard(data) {
+            // Update patient info
+            document.getElementById('patient-name').textContent = data.patient_name || 'Patient';
+            document.getElementById('patient-age').textContent = data.age || '--';
+            document.getElementById('patient-bmi').textContent = data.bmi || '--';
+            document.getElementById('last-reading').textContent = data.timestamp || '--';
+
+            // Update glucose
+            const glucose = data.glucose_level || 0;
+            document.getElementById('glucose-value').textContent = glucose.toFixed(1);
+            
+            let glucoseRange = '70-99 (Normal)';
+            let glucoseColor = 'range-normal';
+            let glucoseBarWidth = (glucose / 200) * 100;
+            
+            if (glucose > 126) {
+                glucoseRange = '>126 (Diabetic)';
+                glucoseColor = 'range-danger';
+            } else if (glucose > 100) {
+                glucoseRange = '100-125 (Pre-diabetic)';
+                glucoseColor = 'range-warning';
+            }
+            
+            document.getElementById('glucose-range').textContent = glucoseRange;
+            document.getElementById('glucose-range').className = glucoseColor;
+            document.getElementById('glucose-bar').style.width = Math.min(glucoseBarWidth, 100) + '%';
+            document.getElementById('glucose-bar').className = 'risk-fill ' + 
+                (glucose > 126 ? 'risk-high' : (glucose > 100 ? 'risk-moderate' : 'risk-low'));
+
+            // Update heart rate
+            const heart = data.heart_rate || 0;
+            document.getElementById('heart-value').textContent = heart;
+            
+            let heartRange = '60-100 (Normal)';
+            let heartColor = 'range-normal';
+            if (heart > 100 || heart < 60) {
+                heartRange = heart > 100 ? '>100 (High)' : '<60 (Low)';
+                heartColor = 'range-danger';
+            }
+            document.getElementById('heart-range').textContent = heartRange;
+            document.getElementById('heart-range').className = heartColor;
+
+            // Update temperature
+            const temp = data.temperature || 0;
+            document.getElementById('temp-value').textContent = temp.toFixed(1);
+            
+            let tempRange = '36.1-37.2 (Normal)';
+            let tempColor = 'range-normal';
+            if (temp > 37.2 || temp < 36.1) {
+                tempRange = temp > 37.2 ? '>37.2 (Fever)' : '<36.1 (Low)';
+                tempColor = 'range-danger';
+            }
+            document.getElementById('temp-range').textContent = tempRange;
+            document.getElementById('temp-range').className = tempColor;
+
+            // Update blood pressure
+            const bpSys = data.blood_pressure_sys || 120;
+            const bpDia = data.blood_pressure_dia || 80;
+            document.getElementById('bp-sys').textContent = bpSys;
+            document.getElementById('bp-dia').textContent = bpDia;
+            
+            let bpRange = '120/80 (Normal)';
+            let bpColor = 'range-normal';
+            if (bpSys > 130 || bpDia > 90) {
+                bpRange = '>130/90 (High)';
+                bpColor = 'range-danger';
+            }
+            document.getElementById('bp-range').textContent = bpRange;
+            document.getElementById('bp-range').className = bpColor;
+        }
+
+        // Update risk assessment
+        function updateRisk(prediction) {
+            const riskScore = (prediction.prediction.probability * 100).toFixed(1);
+            const riskLevel = prediction.prediction.risk_level;
+            
+            document.getElementById('risk-score').textContent = riskScore;
+            
+            const riskBadge = document.getElementById('risk-badge');
+            const riskBar = document.getElementById('risk-bar');
+            
+            if (riskLevel === 'Low Risk') {
+                riskBadge.style.background = '#d4edda';
+                riskBadge.style.color = '#155724';
+                riskBar.className = 'risk-fill risk-low';
+            } else if (riskLevel === 'Moderate Risk') {
+                riskBadge.style.background = '#fff3cd';
+                riskBadge.style.color = '#856404';
+                riskBar.className = 'risk-fill risk-moderate';
+            } else {
+                riskBadge.style.background = '#f8d7da';
+                riskBadge.style.color = '#721c24';
+                riskBar.className = 'risk-fill risk-high';
+            }
+            
+            riskBadge.textContent = riskLevel;
+            riskBar.style.width = riskScore + '%';
+            
+            // Update risk factors
+            const glucose = parseFloat(document.getElementById('glucose-value').textContent);
+            let factors = [];
+            if (glucose > 126) factors.push('High glucose');
+            if (glucose > 100 && glucose <= 126) factors.push('Pre-diabetic range');
+            
+            document.getElementById('risk-factors').textContent = 
+                factors.length ? `Risk factors: ${factors.join(', ')}` : 'No major risk factors detected';
+        }
+
+        // Update recommendations
+        function updateRecommendations(recommendations) {
+            const container = document.getElementById('recommendations-list');
+            container.innerHTML = '';
+            
+            recommendations.forEach((rec, index) => {
+                let cardClass = 'recommendation-card';
+                if (rec.includes('URGENT') || rec.includes('immediately')) {
+                    cardClass += ' rec-urgent';
+                } else if (rec.includes('⚠️')) {
+                    cardClass += ' rec-warning';
+                }
+                
+                container.innerHTML += `
+                    <div class="${cardClass}">
+                        <div class="rec-title">Recommendation ${index + 1}</div>
+                        <div class="rec-desc">${rec}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // Update chart
+        function updateChart(data) {
+            const now = new Date();
+            const timeStr = now.getHours() + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + 
+                           now.getSeconds().toString().padStart(2, '0');
+            
+            chartLabels.push(timeStr);
+            chartData.push(data.glucose_level || 0);
+            dangerLine.push(126); // Danger level line
+            
+            if (chartLabels.length > maxDataPoints) {
+                chartLabels.shift();
+                chartData.shift();
+                dangerLine.shift();
+            }
+            
+            glucoseChart.data.labels = chartLabels;
+            glucoseChart.data.datasets[0].data = chartData;
+            glucoseChart.data.datasets[1].data = dangerLine;
+            glucoseChart.update();
+            
+            // Update stats
+            updateStats();
+        }
+
+        // Update statistics
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+                
+                if (!stats.message) {
+                    document.getElementById('avg-glucose').textContent = stats.avg_glucose?.toFixed(1) || '--';
+                    document.getElementById('max-glucose').textContent = stats.max_glucose?.toFixed(1) || '--';
+                    document.getElementById('total-readings').textContent = stats.readings_count || 0;
+                    document.getElementById('high-alerts').textContent = stats.high_glucose_count || 0;
+                }
+            } catch (error) {
+                console.log('Stats not available');
+            }
+        }
+
+        // Fetch health tip
+        async function fetchHealthTip() {
+            try {
+                const response = await fetch('/api/health-tip');
+                const data = await response.json();
+                document.getElementById('tip-text').textContent = data.tip;
+            } catch (error) {
+                console.log('Health tip not available');
+            }
+        }
+    </script>
+</body>
+</html>
