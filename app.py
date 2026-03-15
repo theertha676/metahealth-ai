@@ -3,11 +3,13 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
 from datetime import datetime
+import pytz
 import json
 from model import predictor
 import random
 from ai_recommendation_engine import ai_recommender
 
+IST = pytz.timezone('Asia/Kolkata')
 app = Flask(__name__)
 CORS(app)
 
@@ -218,7 +220,7 @@ def generate_data_endpoint():
         "temperature": round(36.5 + random.uniform(-0.3, 0.5), 1),
         "blood_pressure_sys": random.randint(110, 130),
         "blood_pressure_dia": random.randint(70, 85),
-        "timestamp": datetime.now().strftime("%H:%M:%S"),
+        "timestamp": datetime.now(IST).strftime("%H:%M:%S"),
         "source": "cron-job"
     }
     
