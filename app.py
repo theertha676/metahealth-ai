@@ -188,7 +188,7 @@ if __name__ == '__main__':
     print("📡 API Endpoint: http://127.0.0.1:5000/api/sensor-data")
     print("=" * 50)
     app.run()
-    @app.route('/api/generate-data', methods=['GET'])
+@app.route('/api/generate-data', methods=['GET'])
 def generate_data_endpoint():
     """Public endpoint that generates and stores a data point"""
     import random
